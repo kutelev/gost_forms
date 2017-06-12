@@ -1,0 +1,78 @@
+\documentclass[14pt]{extreport}
+\usepackage{fontspec}
+\usepackage[a4paper,left=25mm,right=10mm,top=15mm,bottom=30mm,footskip=15mm,headsep=5.03978mm]{geometry} % headsep=7.5mm-7pt
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,pdftitle={Квантовый телепортатор. Руководство по эксплуатации},pdfsubject={},pdfkeywords={}]{hyperref}
+\usepackage{pdfpages}
+
+\usepackage{gostforms}
+
+\renewcommand{\headrulewidth}{0.0mm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancypagestyle{plain}{\fancyhf{}}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\ifdefined\overlaypass
+\newcounter{overlaypage}
+\setcounter{overlaypage}{1}
+\AddToShipoutPicture{\AtPageLowerLeft{\includegraphics[page=\arabic{overlaypage}]{./Form/Form.pdf}\stepcounter{overlaypage}}}
+\fi
+
+\begin{document}
+\begin{sloppypar}
+
+% Начало титульного листа
+\enlargegosttitle
+\gosttitle
+% TOP
+{\strut}
+% TOP LEFT
+{
+УТВЕРЖДЕНО\\
+АБВГ.123456.001-ЛУ
+}
+% TOP RIGHT
+{\strut}
+% MIDDLE
+{
+\uppercase{Квантовый телепортатор}\\*[14pt]
+\textbf{Руководство по эксплуатации}\\*[14pt]
+\textbf{АБВГ.123456.001 РЭ}
+}
+% BOTTOM LEFT
+{\strut}
+% BOTTOM RIGHT
+{\strut}
+% BOTTOM
+{\strut}
+% Конец титульного листа
+
+\setcounter{page}{2}
+\section*{Аннотация}
+
+Настоящее руководство по эксплуатации квантового телепортатора предназначено для ознакомления пользователей и обслуживающего персонала, содержит указания и рекомендации, необходимые для использования квантового телепортатора по назначению, а так же сведения, необходимые для правильного транспортирования, хранения и обслуживания.
+
+В руководстве приведено техническое описание квантового телепортатора, и представлена информация о составе, технических характеристиках и принципе работы.
+
+\renewcommand\contentsname{\vspace{-32mm}\centerline{\Large{Содержание}}}
+\tableofcontents
+\newpage
+
+\section{Описание и работа квантового телепортатора}
+\subsection{Назначение квантового телепортатора}
+
+На рисунках \ref{fig:vector} и \ref{fig:bitmap} изображено неизвестно что...
+
+\gostfigure{./Pics/vector.pdf}{Векторное изображение}{fig:vector}{0.5}{ht}
+\gostfigure{./Pics/bitmap.png}{Растровое изображение}{fig:bitmap}{0.25}{ht}
+
+\clearpage
+\section{Эксплуатационные ограничения}
+
+По способу защиты человека от поражения электрическим током устройство относится к изделиям, не представляющим опасность поражения электрическим током и не требующим защиты персонала от случайного соприкосновения с электрическими цепями.
+
+\end{sloppypar}
+\end{document}

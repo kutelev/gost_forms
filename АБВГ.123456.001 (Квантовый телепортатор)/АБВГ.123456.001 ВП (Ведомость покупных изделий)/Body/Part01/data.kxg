@@ -1,0 +1,15 @@
+H	Конденсаторы
+L		GRM155R61A105KE15D			MURATA		2			2
+L		NFM18CC223R1C3			MURATA		7			7
+L		GRM31CR60J107ME39L			MURATA		14			14
+L
+H	Схемы интегральные
+L		ESDA6V1L			STM		6			6
+L		EXB-28V220JX			PANASONIC		7			7
+L
+H	Катушки индуктивности
+L		SRU1038-2R2Y			BOURNS		2			2
+L
+H	Резисторы
+L		Р1-12 - 0,062 - 0 Ом ± 5\% - М			НПО «ЭРКОН»		7			7
+L		Р1-12 - 0,062 - 2,2 кОм ± 5\% - М			НПО «ЭРКОН»		8			8

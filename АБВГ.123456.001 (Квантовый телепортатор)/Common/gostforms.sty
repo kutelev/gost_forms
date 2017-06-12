@@ -1,0 +1,271 @@
+\usepackage{array}
+
+\usepackage{xunicode}
+\usepackage{xltxtra}
+\usepackage{indentfirst, titlesec, titletoc, enumitem}
+\usepackage[singlelinecheck=false]{caption}
+\usepackage{fontspec}
+\usepackage[russian]{babel}
+\usepackage{multirow, longtable}
+
+\setitemize{leftmargin=\parindent, labelsep=*, labelindent=\parindent,
+	labelwidth=5mm, itemindent=10mm, label=–, listparindent=0mm, topsep=0mm,
+	partopsep=0mm, parsep=0mm, itemsep=0mm}
+
+\setenumerate{leftmargin=\parindent, labelsep=*, labelindent=\parindent,
+	labelwidth=5mm, itemindent=10mm, label=\arabic*), listparindent=0mm, topsep=0mm,
+	partopsep=0mm, parsep=0mm, itemsep=0mm}
+
+\DeclareCaptionLabelSeparator{gostcapsep}{ – }
+\DeclareCaptionLabelFormat{gostfiglabelfmt}{Рисунок #2}
+\captionsetup[figure]{labelsep=gostcapsep, labelformat=gostfiglabelfmt, font={bf},
+	skip=0mm, justification=centering}
+
+\DeclareCaptionLabelSeparator{gostcapsep}{ – }
+\DeclareCaptionLabelFormat{gosttablabelfmt}{Таблица #2}
+\captionsetup[table]{labelsep=gostcapsep, labelformat=gosttablabelfmt, font={bf},
+	skip=0mm, justification=RaggedRight}
+
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}
+\setmathrm{Times New Roman}
+
+\newlength{\colA}\newlength{\colB}\newlength{\colC}\newlength{\colD}
+\newlength{\colE}\newlength{\colF}\newlength{\colG}\newlength{\colH}
+\newlength{\colI}\newlength{\colJ}\newlength{\colK}\newlength{\colL}
+
+\newcolumntype{C}[1]{>{\centering}p{#1}}
+
+\setlength{\tabcolsep}{        1.0mm}
+\setlength{\parindent}{      15.00mm}
+\linespread{1.3}
+
+\titlespacing*{\section}{15mm}{15mm}{14pt}
+\titlespacing*{\subsection}{15mm}{15mm}{14pt}
+\titlespacing*{\subsubsection}{15mm}{15mm}{14pt}
+
+\newcommand{\gostcentersection}[1]{\section*{\centerline{\hspace*{-30mm}#1}}}
+
+\titlecontents{section}
+    [7mm]
+    {}
+    {\contentslabel{7mm}}
+    {\hspace*{0mm}}
+    { \titlerule*[1.5mm]{.}\contentspage}
+
+\titlecontents{subsection}
+    [20mm]
+    {}
+    {\contentslabel{10mm}}
+    {\hspace*{0mm}}
+    { \titlerule*[1.5mm]{.}\contentspage}
+
+\titlecontents{subsubsection}
+    [35mm]
+    {}
+    {\contentslabel{15mm}}
+    {\hspace*{0mm}}
+    { \titlerule*[1.5mm]{.}\contentspage}
+
+\newcommand{\parnum}[0]{\makebox[15mm][l]{\stepcounter{subsection}\thesection.\arabic{subsection}}}
+\newcommand{\subparnum}[0]{\makebox[15mm][l]{\stepcounter{subsubsection}\thesubsection.\arabic{subsubsection}}}
+\newcommand{\subsubparnum}[0]{\makebox[20mm][l]{\stepcounter{paragraph}\thesubsubsection.\arabic{paragraph}}}
+
+\newcommand{\clause}[1]{\refstepcounter{subsection}{{\makebox[15mm][l]{\thesubsection}}}{#1}}
+\newcommand{\subclause}[1]{\refstepcounter{subsubsection}{{\makebox[15mm][l]{\thesubsubsection}}}{#1}}
+\newcommand{\subsubclause}[1]{\refstepcounter{paragraph}{{\makebox[20mm][l]{\theparagraph}}}{#1}}
+
+\newcommand{\gostldaq}[0]{\lowercase{«}}
+\newcommand{\gostrdaq}[0]{\lowercase{»}}
+
+\newcommand{\gostwarning}[1]{
+\nopagebreak[4]\par\noindent\uppercase{\textbf{#1}}
+}
+
+\newcommand{\gostfigure}[5]{
+\begin{figure}[#5]\begin{center}
+\includegraphics[scale=#4]{#1}\caption{#2}\label{#3}
+\end{center}\end{figure}
+}
+
+\def\numberoffigures@putlabel{
+\immediate\write\@auxout{\string
+\newlabel{NumberOfFigures}{{}{\thefigure}{}{page.\thefigure}{}}}%
+}
+\AtEndDocument{
+\clearpage\numberoffigures@putlabel}
+
+\def\numberoftables@putlabel{
+\immediate\write\@auxout{\string
+\newlabel{NumberOfTables}{{}{\thetable}{}{page.\thetable}{}}}%
+}
+\AtEndDocument{
+\clearpage\numberoftables@putlabel}
+
+\newcommand{\gostnumofpages}[0]{\pageref{LastPage}}
+\newcommand{\gostnumoffigures}[0]{\pageref{NumberOfFigures}}
+\newcommand{\gostnumoftables}[0]{\pageref{NumberOfTables}}
+
+\newdimen\bibindent
+\setlength\bibindent{1.5em}
+\renewenvironment{thebibliography}[1]
+     {\newpage\phantomsection\gostcentersection{\bibname
+        \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}
+      \list{\@biblabel{\@arabic\c@enumiv}}
+           {\settowidth\labelwidth{\@biblabel{#1}}
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \itemsep\z@skip
+            \parsep\z@skip
+            \@openbib@code
+            \usecounter{enumiv}
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}
+      \sloppy\clubpenalty4000\widowpenalty4000
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}
+      \endlist}
+\renewcommand\newblock{\hskip .11em\@plus.33em\@minus.07em}
+\let\@openbib@code\@empty
+
+
+\renewcommand*\thesection{\arabic{section}}
+
+\setitemize{leftmargin=\parindent, labelsep=*, labelindent=\parindent,
+        labelwidth=5mm, itemindent=0mm, label=–, listparindent=0mm, topsep=0mm,
+        partopsep=0mm, parsep=0mm, itemsep=0mm, leftmargin=\parindent + 10mm}
+
+\setenumerate{leftmargin=\parindent, labelsep=*, labelindent=\parindent,
+        labelwidth=5mm, itemindent=0mm, label=\arabic*), listparindent=0mm, topsep=0mm,
+        partopsep=0mm, parsep=0mm, itemsep=0mm, leftmargin=\parindent + 10mm}
+
+
+\setmainfont[Mapping=tex-text]{Times New Roman}
+\setmonofont[Mapping=tex-text]{Courier New}
+
+\usepackage{fancyhdr}
+\renewcommand{\headrulewidth}{0.0mm}
+
+
+\newcommand{\gostsignature}[2]{
+\parbox{60mm}{\hrulefill\hspace*{1mm}#1}\\
+\parbox{60mm}{«\parbox[b]{8mm}{\hspace{1mm}\hrulefill\hspace*{1mm}}»\hspace{1mm}\hrulefill\hspace{1mm}#2 г.}
+}
+
+\newcommand{\gostsignaturewithpost}[3]{
+\strut\par\vskip-\baselineskip\nointerlineskip
+\parbox{60mm}{\strut\ignorespaces\centering{#1}\unskip\strut}\\
+\parbox{60mm}{\hrulefill\hspace*{1mm}#2}\\
+\parbox{60mm}{«\parbox[b]{8mm}{\hspace{1mm}\hrulefill\hspace*{1mm}}»\hspace{1mm}\hrulefill\hspace{1mm}#3 г.}
+}
+
+\newcommand{\gosttitle}[7]{
+\begin{titlepage}
+\thispagestyle{plain}
+\begin{minipage}[c]{\textwidth}
+% TOP
+\hspace*{-15mm}\parbox[t][\textheight][t]{\textwidth}{\centering{#1}}
+
+% TOP LEFT & RIGHT
+\vspace*{-\lineskip}\vspace*{-\textheight}\hspace*{-15mm}\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#2}}
+\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#3}}
+
+% MIDDLE
+\vspace*{-\lineskip}\vspace*{-0.5\textheight}\hspace*{-15mm}\parbox[c][\textheight][c]{\textwidth}{\centering{#4}}
+
+% BOTTOM LEFT & RIGHT
+\vspace*{-\lineskip}\vspace*{-0.5\textheight}\hspace*{-15mm}\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#5}}
+\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#6}}
+
+% BOTTOM
+\vspace*{-\lineskip}\vspace*{-\textheight}\hspace*{-15mm}\parbox[b][\textheight][b]{\textwidth}{\centering{#7}}
+\end{minipage}
+\end{titlepage}
+}
+
+
+\usepackage{hyphenat}
+\newcommand\nohyphenss{\language\langwohyphens}
+\renewcommand\section{\@startsection {section}{1}{\z@}
+                      {-3.5ex \@plus -1ex \@minus -.2ex}
+                      {2.3ex \@plus.2ex}
+                      {\normalfont\Large\bfseries\nohyphenss}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}
+                         {-3.25ex\@plus -1ex \@minus -.2ex}
+                         {1.5ex \@plus .2ex}
+                         {\normalfont\large\bfseries\nohyphenss}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}
+                            {-3.25ex\@plus -1ex \@minus -.2ex}
+                            {1.5ex \@plus .2ex}
+                            {\normalfont\normalsize\bfseries\nohyphenss}}
+
+
+\renewcommand{\gostfigure}[5]{
+\begin{figure}[#5]\centering
+\hspace*{-5mm}\includegraphics[scale=#4]{#1}\caption{#2}\label{#3}
+\end{figure}
+}
+
+\titlespacing*{\section}{15mm}{0mm}{14pt}
+\titlespacing*{\subsection}{15mm}{0mm}{14pt}
+\titlespacing*{\subsubsection}{15mm}{0mm}{0mm}
+
+\setitemize[2]{labelindent=0mm, leftmargin=10mm}
+
+\renewcommand{\gostcentersection}[1]{\section*{\centering{}#1}}
+
+\renewcommand{\gostsignaturewithpost}[3]{
+\strut\par\vskip-\baselineskip\nointerlineskip
+\parbox{60mm}{\strut\ignorespaces\centering{#1}\unskip\strut}\\\vspace{\baselineskip}\vspace{-14pt}
+\parbox{60mm}{\hrulefill\hspace*{1mm}#2}\\
+\parbox{60mm}{«\parbox[b]{8mm}{\hspace{1mm}\hrulefill\hspace*{1mm}}»\hspace{1mm}\hrulefill\hspace{1mm}#3 г.}
+}
+
+\clubpenalty=10000
+\widowpenalty=10000
+
+
+\newcommand{\enlargegosttitle}[0]{
+\def\enableenlargegosttitle{}
+}
+
+\renewcommand{\gosttitle}[7]{
+\ifdefined\enableenlargegosttitle
+\enlargethispage*{15mm}
+\advance\textheight by 15mm
+\fi
+\begin{titlepage}
+\thispagestyle{plain}
+\begin{minipage}[c]{\textwidth}
+% TOP
+\hspace*{-15mm}\parbox[t][\textheight][t]{\textwidth}{\centering{#1}}
+
+% TOP LEFT & RIGHT
+\vspace*{-\lineskip}\vspace*{-\textheight}\hspace*{-15mm}\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#2}}
+\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#3}}
+
+% MIDDLE
+\vspace*{-\lineskip}\vspace*{-0.5\textheight}\hspace*{-15mm}\parbox[c][\textheight][c]{\textwidth}{\centering{#4}}
+
+% BOTTOM LEFT & RIGHT
+\vspace*{-\lineskip}\vspace*{-0.5\textheight}\hspace*{-15mm}\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#5}}
+\parbox[c][0.5\textheight][c]{0.5\textwidth}{\centering{#6}}
+
+% BOTTOM
+\vspace*{-\lineskip}\vspace*{-\textheight}\hspace*{-15mm}\parbox[b][\textheight][b]{\textwidth}{\centering{#7}}
+\end{minipage}
+\end{titlepage}
+\ifdefined\enableenlargegosttitle
+\advance\textheight by -15mm
+\fi
+}
+
+\renewcommand{\gostsignaturewithpost}[3]{
+\strut\par\vskip-\baselineskip\nointerlineskip
+\parbox{60mm}{#1}\\\vspace{\baselineskip}\vspace{-14pt}
+\parbox{60mm}{\hrulefill\hspace*{1mm}#2}\\
+\parbox{60mm}{«\parbox[b]{8mm}{\hspace{1mm}\hrulefill\hspace*{1mm}}»\hspace{1mm}\hrulefill\hspace{1mm}#3 г.}
+}
+
+\endinput
