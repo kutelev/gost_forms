@@ -1,0 +1,29 @@
+stages:
+  - build
+
+build:docker_image:
+  stage: build
+  script:
+  - docker build --no-cache -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME .
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker push $CI_REGISTRY/$(echo $CI_PROJECT_PATH | tr 'A-Z' 'a-z'):$CI_COMMIT_REF_NAME
+  - docker logout $CI_REGISTRY
+  tags:
+  - fictional-goggles
+  when: manual
+
+build:documents:
+  stage: build
+  image: $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME
+  script:
+  - apt-get install -y git
+  - git config core.quotePath false # Witout this line "untracked: true" will find no artifacts!
+  - ls -1 | egrep "^.{4}\.[0-9]{6}\.[0-9]{3}\ \([А-Яа-я ]+\)$" | xargs -n1 -I{} bash -c "cd \"{}\"; make"
+  - find ./ -type f -printf "%P\n" | egrep "[А-Я]{4}\.[0-9]{6}\.[0-9]{3}\ ([0-9А-Я]+\ )?\([А-Яа-я ]+\)\.pdf" > .gitignore
+  - git add .gitignore
+  - git clean -f -d -q
+  - git rm -f .gitignore
+  tags:
+  - docker
+  artifacts:
+    untracked: true
