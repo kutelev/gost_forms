@@ -1,5 +1,5 @@
-FROM ubuntu:14.04
-MAINTAINER Alexander Kutelev <alexander@kutelev.ru>
+FROM registry.gitlab.com/kutelev/gost_forms/ubuntu:14.04
+LABEL maintainer "Alexander Kutelev <alexander@kutelev.ru>"
 RUN apt-get update && apt-get -y upgrade; \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
     apt-get install -y g++ make inkscape pdftk texlive-xetex texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-lang-cyrillic locales msttcorefonts; \
