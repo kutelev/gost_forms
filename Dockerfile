@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/kutelev/gost_forms/ubuntu:14.04
+FROM ubuntu:14.04
 LABEL maintainer "Alexander Kutelev <alexander@kutelev.ru>"
 RUN apt-get update && apt-get -y upgrade; \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
