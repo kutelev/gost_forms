@@ -1,6 +1,6 @@
 PAGES_DIR     = Pages
 
-SEP_PAGES    := $(patsubst %.svg,$(PAGES_DIR)/%.pdf,$(wildcard *.svg))
+SEP_PAGES    := $(patsubst %.svg,$(PAGES_DIR)/%.pdf,$(sort $(wildcard *.svg)))
 
 MERGED_PAGES  = $(PAGES_DIR)/merged.pdf
 
