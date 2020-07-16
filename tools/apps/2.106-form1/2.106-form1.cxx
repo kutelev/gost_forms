@@ -1,28 +1,29 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include <kxsvglib.h>
-#include <kxparsetablelib.h>
 #include <kxcomapplib.h>
+#include <kxparsetablelib.h>
+#include <kxsvglib.h>
 #include <math.h>
 
 class Table : public AbstractTable {
-    public:
-        Table();
+public:
+    Table();
 
-    protected:
-        virtual double headerHeight(int page_num, int row = 0) const;
+protected:
+    virtual double headerHeight(int page_num, int row = 0) const;
 
-        virtual int columnsNum() const;
-        virtual double columnWidth(int num) const;
-        virtual KXSvg::Alignment columnAlignment(int num) const;
-        virtual int columnAngle(int num, int row = 0) const;
-        virtual const char * columnName(int column, int row = 0) const;
-        virtual int headerColumnNum() const;
+    virtual int columnsNum() const;
+    virtual double columnWidth(int num) const;
+    virtual KXSvg::Alignment columnAlignment(int num) const;
+    virtual int columnAngle(int num, int row = 0) const;
+    virtual const char* columnName(int column, int row = 0) const;
+    virtual int headerColumnNum() const;
 };
 
-Table::Table() : AbstractTable(Page::A4, false)
+Table::Table()
+    : AbstractTable(Page::A4, false)
 {
     configureDimensions(Page::A4, false);
     min_line_height = 8.0L;
@@ -40,25 +41,25 @@ int Table::columnsNum() const
 
 double Table::columnWidth(int num) const
 {
-    static const double widths[] = {6.0, 6.0, 8.0, 70.0, 63.0, 10.0, 22.0};
+    static const double widths[] = { 6.0, 6.0, 8.0, 70.0, 63.0, 10.0, 22.0 };
     return widths[num];
 }
 
 KXSvg::Alignment Table::columnAlignment(int num) const
 {
-    static const KXSvg::Alignment alignments[] = {KXSvg::Center, KXSvg::Center, KXSvg::Center, KXSvg::Left, KXSvg::Left, KXSvg::Center, KXSvg::Center};
+    static const KXSvg::Alignment alignments[] = { KXSvg::Center, KXSvg::Center, KXSvg::Center, KXSvg::Left, KXSvg::Left, KXSvg::Center, KXSvg::Center };
     return alignments[num];
 }
 
 int Table::columnAngle(int num, int row) const
 {
-    static const int angles[] = {-90, -90, -90, 0, 0, -90, 0};
+    static const int angles[] = { -90, -90, -90, 0, 0, -90, 0 };
     return angles[num];
 }
 
-const char * Table::columnName(int column, int row) const
+const char* Table::columnName(int column, int row) const
 {
-    static const char * names[] = {"Формат", "Зона", "Поз.", "Обозначение", "Наименование", "Кол.", "Примечание"};
+    static const char* names[] = { "Формат", "Зона", "Поз.", "Обозначение", "Наименование", "Кол.", "Примечание" };
     return names[column];
 }
 
