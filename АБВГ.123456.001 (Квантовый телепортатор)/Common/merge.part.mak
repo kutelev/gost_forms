@@ -1,9 +1,9 @@
 FORM_DIR = $(wildcard ../Form)
 
 ifneq ($(FORM_DIR),)
-PAGES = $(wildcard ../Overlay/Pages/Sheet_??.pdf)
+PAGES = $(sort $(wildcard ../Overlay/Pages/Sheet_??.pdf))
 else
-PAGES = $(wildcard ../Body/Pages/Sheet_??.pdf)
+PAGES = $(sort $(wildcard ../Body/Pages/Sheet_??.pdf))
 ifeq ($(PAGES),)
 PAGES = ../Body/Body.pdf
 endif

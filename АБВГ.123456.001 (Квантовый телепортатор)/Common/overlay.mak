@@ -1,4 +1,4 @@
-PAGES          = $(addprefix Pages/,$(notdir $(wildcard ../Body/Pages/Sheet_??.pdf)))
+PAGES          = $(addprefix Pages/,$(notdir $(sort $(wildcard ../Body/Pages/Sheet_??.pdf))))
 
 .PHONY : pages_files
 
