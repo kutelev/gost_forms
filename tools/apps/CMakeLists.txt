@@ -1,0 +1,10 @@
+foreach(APP_NAME 2.106-form1 2.106-form5 formgen listofelgen)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${APP_NAME})
+    file(GLOB SOURCES "${APP_NAME}/*.cxx")
+    add_executable(${APP_NAME} ${SOURCES})
+endforeach()
+
+target_link_libraries(2.106-form1 kxcomapplib)
+target_link_libraries(2.106-form5 kxcomapplib)
+target_link_libraries(formgen kxgostformlib)
+target_link_libraries(listofelgen kxsvglib)

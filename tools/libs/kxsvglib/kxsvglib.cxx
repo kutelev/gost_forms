@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string>
 
-#include <kxparsetablelib.cxx>
+#include <kxparsetablelib.h>
 
 #include "kxsvglib.h"
 

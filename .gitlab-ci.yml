@@ -1,31 +1,39 @@
 stages:
+  - prepare
   - build
 
-build:docker_image:
-  stage: build
+prepare:image:
+  stage: prepare
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
-  - mkdir -p /root/.docker
-  - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /root/.docker/config.json
-  - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY/$(echo $CI_PROJECT_PATH | tr 'A-Z' 'a-z'):$CI_COMMIT_REF_NAME
+    - mkdir -p /kaniko/.docker
+    - export CONTEXT_PATH=${CI_PROJECT_DIR}
+    - export DOCKERFILE_PATH=${CI_PROJECT_DIR}/Dockerfile
+    - export DESTINATION_PATH=${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context ${CONTEXT_PATH} --dockerfile ${DOCKERFILE_PATH} --destination ${DESTINATION_PATH}
   tags:
-  - docker
-  - gce
+    - docker
+    - linux
   when: manual
 
 build:documents:
   stage: build
-  image: $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME
+  image: ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}
   script:
-  - apt-get install -y git
-  - ls -1 | egrep "^.{4}\.[0-9]{6}\.[0-9]{3}\ \([А-Яа-я ]+\)$" | xargs -n1 -I{} bash -c "cd \"{}\"; make"
-  - find ./ -type f -printf "%P\n" | egrep "[А-Я]{4}\.[0-9]{6}\.[0-9]{3}\ ([0-9А-Я]+\ )?\([А-Яа-я ]+\)\.pdf" > .gitignore
-  - git add .gitignore
-  - git clean -f -d -q
-  - git rm -f .gitignore
+    # Build tools first.
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1 -G "Unix Makefiles"
+    - cmake --build . --config Release
+    # Build documents.
+    - ls -1 | egrep "^.{4}\.[0-9]{6}\.[0-9]{3}\ \([А-Яа-я ]+\)$" | xargs -n1 -I{} bash -c "cd \"{}\"; make"
+    - find ./ -type f -printf "%P\n" | egrep "[А-Я]{4}\.[0-9]{6}\.[0-9]{3}\ ([0-9А-Я]+\ )?\([А-Яа-я ]+\)\.pdf" > .gitignore
+    - git add .gitignore
+    - git clean -f -d -q
+    - git rm -f .gitignore
   tags:
-  - docker
+    - docker
+    - linux
   artifacts:
     untracked: true

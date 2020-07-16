@@ -22,7 +22,7 @@ static void copy(char* dest, const char* src, size_t n)
     dest[0] = '\0';
 }
 
-int parseLine(const char*const line, const unsigned int max_columns_cnt,
+static int parseLine(const char*const line, const unsigned int max_columns_cnt,
     char*const*const columns, const unsigned int max_column_len, const char sep)
 {
     unsigned int i, j, idx = 0, col_len, trailing = 0;
