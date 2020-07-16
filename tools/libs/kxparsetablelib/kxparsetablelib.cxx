@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
 
 #include "kxparsetablelib.h"
 
@@ -23,14 +22,14 @@ static void copy(char* dest, const char* src, size_t n)
     dest[0] = '\0';
 }
 
-static int parseLine(const char* const line, const unsigned int max_columns_cnt, char* const* const columns, const unsigned int max_column_len, const char sep)
+static unsigned int parseLine(const char* line, unsigned int max_columns_cnt, char** columns, unsigned int max_column_len, char sep)
 {
     unsigned int i, j, idx = 0, col_len, trailing = 0;
     unsigned int pos[2 * MAX_COLUMNS_NUM];
     int flag = BEGIN;
 
     if (max_columns_cnt > MAX_COLUMNS_NUM)
-        return -1;
+        return 0;
 
     if (line[0] == '%')
         return 0;
@@ -87,29 +86,29 @@ static int parseLine(const char* const line, const unsigned int max_columns_cnt,
     return j;
 }
 
-TextLine::TextLine(int max_columns_num, int max_column_len)
+TextLine::TextLine(unsigned int max_column_count, unsigned int max_column_len)
 {
-    TextLine::max_columns_num = max_columns_num;
-    TextLine::max_column_len = max_column_len;
-    columns_num = 0;
-    columns_data = new char*[max_columns_num];
-    for (int i = 0; i < max_columns_num; i++) {
-        columns_data[i] = new char[max_column_len];
-        columns_data[i][0] = '\0';
+    m_max_columns_num = max_column_count;
+    m_max_column_len = max_column_len;
+    m_columns_num = 0U;
+    m_columns_data = new char*[max_column_count];
+    for (unsigned int i = 0U; i < max_column_count; ++i) {
+        m_columns_data[i] = new char[max_column_len];
+        m_columns_data[i][0] = '\0';
     }
 }
 
 TextLine::~TextLine()
 {
-    for (int i = 0; i < max_columns_num; i++)
-        delete[] columns_data[i];
-    delete[] columns_data;
+    for (unsigned int i = 0U; i < m_max_columns_num; ++i)
+        delete[] m_columns_data[i];
+    delete[] m_columns_data;
 }
 
-int TextLine::parseLine(const char* line, char delimiter)
+unsigned int TextLine::parseLine(const char* line, char delimiter)
 {
-    for (int i = 0; i < max_columns_num; i++)
-        columns_data[i][0] = '\0';
-    columns_num = ::parseLine(line, max_columns_num, columns_data, max_column_len, delimiter);
-    return columns_num;
+    for (unsigned int i = 0; i < m_max_columns_num; ++i)
+        m_columns_data[i][0] = '\0';
+    m_columns_num = ::parseLine(line, m_max_columns_num, m_columns_data, m_max_column_len, delimiter);
+    return m_columns_num;
 }

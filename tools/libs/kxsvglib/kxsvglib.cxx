@@ -1,28 +1,28 @@
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #include <kxparsetablelib.h>
 
 #include "kxsvglib.h"
 
-static const char* const textStyle(const KXSvg::Alignment alignmet)
+static const char* textStyle(const KXSvg::Alignment alignmet)
 {
     switch (alignmet) {
         case KXSvg::Left:
-            return (const char* const) "text-align:start;text-anchor:start";
+            return "text-align:start;text-anchor:start";
         case KXSvg::Center:
-            return (const char* const) "text-align:center;text-anchor:middle";
+            return "text-align:center;text-anchor:middle";
         case KXSvg::Right:
-            return (const char* const) "text-align:end;text-anchor:end";
+            return "text-align:end;text-anchor:end";
         default:
             fprintf(stderr, "Invalid alignmet type!\n");
-            return (const char* const) "text-align:center;text-anchor:middle";
+            return "text-align:center;text-anchor:middle";
     }
 }
 
 namespace KXSvg {
 
-int drawRect(FILE* file, const double x, const double y, const double width, const double height, const bool bold)
+int drawRect(FILE* file, double x, double y, double width, double height, bool bold)
 {
     fprintf(file,
             "        <rect x=\"%.6lf\" y=\"%.6lf\" width=\"%.6lf\" "
@@ -37,7 +37,7 @@ int drawRect(FILE* file, const double x, const double y, const double width, con
     return 0;
 }
 
-int drawLine(FILE* file, const double x1, const double y1, const double x2, const double y2, const bool bold)
+int drawLine(FILE* file, double x1, double y1, double x2, double y2, bool bold)
 {
     fprintf(file,
             "        <line x1=\"%.6lf\" y1=\"%.6lf\" x2=\"%.6lf\" "
@@ -51,10 +51,10 @@ int drawLine(FILE* file, const double x1, const double y1, const double x2, cons
     return 0;
 }
 
-int drawText(FILE* file, const double x, const double y, const double font_size, const char* const text, const Alignment alignment, const int angle)
+int drawText(FILE* file, double x, double y, double font_size, const char* text, Alignment alignment, int angle)
 {
-    const double k1 = 3.54330700988902143941095308362109464599991908268;
-    const double k2 = 4.65675812022197213706391400520004656758120221972;
+    constexpr double k1 = 3.54330700988902143941095308362109464599991908268;
+    constexpr double k2 = 4.65675812022197213706391400520004656758120221972;
 
     switch (angle) {
         case 0:
@@ -117,20 +117,20 @@ int drawText(FILE* file, const double x, const double y, const double font_size,
     return 0;
 }
 
-int drawMultilineText(FILE* file, double x, double y, double font_size, const char* multiline_text, Alignment alignment, int angle)
+int drawMultilineText(FILE* file, double x, double y, double font_size, const char* multiline_text, int angle)
 {
-    int num;
+    unsigned int num;
     double line_skip;
     double x_step = 0.0;
     double y_step = 0.0;
 
-    TextLine columns(4, 128);
+    TextLine columns(4U, 128U);
 
     num = columns.parseLine(multiline_text, '\n');
 
-    if (num < 0 || num > 4)
+    if (num > 4U)
         return -1;
-    if (num == 0)
+    if (num == 0U)
         return 0;
 
     switch (angle) {
@@ -148,9 +148,11 @@ int drawMultilineText(FILE* file, double x, double y, double font_size, const ch
             return -1;
     }
 
-    for (int i = 0; i < num; i++, x += x_step, y += y_step) {
+    for (unsigned int i = 0U; i < num; ++i) {
         if (columns[i][0] != '\0')
             KXSvg::drawText(file, x, y, font_size, columns[i], KXSvg::Center, angle);
+        x += x_step;
+        y += y_step;
     }
 
     return 0;
@@ -158,75 +160,71 @@ int drawMultilineText(FILE* file, double x, double y, double font_size, const ch
 
 }
 
-Page::Page(const Page::PageSize page_size, const bool landscape)
+Page::Page(PageSize page_size, bool landscape)
 {
     setSize(page_size, landscape);
-    is_ended = false;
+    m_is_ended = false;
 }
 
-int Page::setSize(const Page::PageSize page_size, const bool landscape)
+int Page::setSize(PageSize page_size, bool landscape)
 {
-    Page::page_size = page_size;
+    Page::m_page_size = page_size;
 
     switch (page_size) {
         case A0:
-            width = 841.0;
-            height = 1189.0;
+            m_width = 841.0;
+            m_height = 1189.0;
             break;
         case A1:
-            width = 594.0;
-            height = 841.0;
+            m_width = 594.0;
+            m_height = 841.0;
             break;
         case A2:
-            width = 420.0;
-            height = 594.0;
+            m_width = 420.0;
+            m_height = 594.0;
             break;
         case A3:
-            width = 297.0;
-            height = 420.0;
+            m_width = 297.0;
+            m_height = 420.0;
             break;
         case A4:
-            width = 210.0;
-            height = 297.0;
+            m_width = 210.0;
+            m_height = 297.0;
             break;
         default:
             fprintf(stderr, "Invalid page size!\n");
-            width = 210.0;
-            height = 297.0;
+            m_width = 210.0;
+            m_height = 297.0;
     }
 
-    if (landscape) {
-        double tmp;
-        tmp = width;
-        width = height;
-        height = tmp;
-    }
+    if (landscape)
+        std::swap(m_width, m_height);
 
     return 0;
 }
 
-const char* const Page::formatName() const
+const char* Page::formatName() const
 {
-    switch (page_size) {
+    switch (m_page_size) {
         case A0:
-            return (const char* const) "A0";
+            return "A0";
         case A1:
-            return (const char* const) "A1";
+            return "A1";
         case A2:
-            return (const char* const) "A2";
+            return "A2";
         case A3:
-            return (const char* const) "A3";
+            return "A3";
         case A4:
-            return (const char* const) "A4";
+            return "A4";
         default:
             fprintf(stderr, "Invalid page size!\n");
-            return (const char* const) "??";
+            return "??";
     }
 }
 
 int Page::begin(FILE* file) const
 {
-    is_ended = false;
+    m_is_ended = false;
 
     fprintf(file, "<?xml version=\"1.0\" standalone=\"no\"?>\n");
     fprintf(file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
@@ -234,10 +232,10 @@ int Page::begin(FILE* file) const
     fprintf(file,
             "<svg width=\"%.6lfmm\" height=\"%.6lfmm\" "
             "viewBox=\"0 0 %.6lf %.6lf\" version=\"1.1\"\n",
-            width,
-            height,
-            width,
-            height);
+            m_width,
+            m_height,
+            m_width,
+            m_height);
     fprintf(file, "    xmlns=\"http://www.w3.org/2000/svg\">\n");
 
     return 0;
@@ -247,30 +245,28 @@ int Page::end(FILE* file) const
 {
     fprintf(file, "</svg>\n");
 
-    is_ended = true;
+    m_is_ended = true;
 
     return 0;
 }
 
-int Element::setOffset(const double x_offs, const double y_offs)
+void Element::setOffset(double x_offs, double y_offs)
 {
-    Element::x_offs = x_offs;
-    Element::y_offs = y_offs;
-
-    return 0;
+    m_x_offs = x_offs;
+    m_y_offs = y_offs;
 }
 
 int OutFile::open(const char* file_name)
 {
-    file_ = fopen(file_name, "w");
-    if (file_ == NULL)
+    m_file = fopen(file_name, "w");
+    if (m_file == nullptr)
         return -1;
     return 0;
 }
 
 void OutFile::close()
 {
-    if (file_ != NULL)
-        fclose(file_);
-    file_ = NULL;
+    if (m_file != nullptr)
+        fclose(m_file);
+    m_file = nullptr;
 }

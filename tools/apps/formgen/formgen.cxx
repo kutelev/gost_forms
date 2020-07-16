@@ -1,21 +1,21 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <kxgostformlib.h>
 
 #define MAX_LINE_LEN 1024
 
-static Page* page = 0;
-static Form* form = 0;
+static Page* page = nullptr;
+static Form* form = nullptr;
 static std::ifstream in_file;
-static FILE* out_file = NULL;
+static FILE* out_file = nullptr;
 
 static char* out_dir = (char*)".";
-static char* file_name = NULL;
+static char* file_name = nullptr;
 static unsigned int num_pages = 1;
 
 static int parseArgs(int argc, char** argv)
@@ -23,13 +23,13 @@ static int parseArgs(int argc, char** argv)
     int c;
 
     struct option long_options[] = {
-        { "input", required_argument, NULL, 0 },
-        { "pages", required_argument, NULL, 0 },
-        { "dir", required_argument, NULL, 0 },
-        { 0, 0, 0, 0 },
+        { "input", required_argument, nullptr, 0 },
+        { "pages", required_argument, nullptr, 0 },
+        { "dir", required_argument, nullptr, 0 },
+        { nullptr, 0, nullptr, 0 },
     };
 
-    while (1) {
+    while (true) {
         int option_index = 0;
 
         c = getopt_long(argc, argv, "i:p:d:", long_options, &option_index);
@@ -68,10 +68,9 @@ static int parseArgs(int argc, char** argv)
             case '?':
                 fprintf(stderr, "Invalid short argument\n");
                 return -1;
-                break;
-
             default:
                 fprintf(stderr, "getopt_long returned unexpected code\n");
+                return -1;
         }
     }
 
@@ -90,15 +89,13 @@ static void printUsage()
     fprintf(stderr, "===============================\n");
 }
 
-void bye(void)
+void bye()
 {
-    if (form != 0)
-        delete form;
-    if (page != 0)
-        delete page;
+    delete form;
+    delete page;
     if (in_file.is_open())
         in_file.close();
-    if (out_file != NULL)
+    if (out_file != nullptr)
         fclose(out_file);
 }
 
@@ -117,14 +114,14 @@ int main(int argc, char** argv)
 
     parseArgs(argc, argv);
 
-    if (file_name == NULL) {
+    if (file_name == nullptr) {
         fprintf(stderr, "===============================\n");
         fprintf(stderr, "File name required!\n");
         printUsage();
         return -1;
     }
 
-    if (num_pages > 100) {
+    if (num_pages > 100U) {
         fprintf(stderr, "===============================\n");
         fprintf(stderr, "To many pages (>100)!\n");
         printUsage();
@@ -141,9 +138,9 @@ int main(int argc, char** argv)
     if (strlen(single_line) > 0) {
 
         token0 = strtok(single_line, "\t");
-        token1 = strtok(NULL, "\t");
+        token1 = strtok(nullptr, "\t");
 
-        if ((token0 == NULL) || (token1 == NULL)) {
+        if ((token0 == nullptr) || (token1 == nullptr)) {
             fprintf(stderr, "Invalid file format");
             return -1;
         }
@@ -198,10 +195,10 @@ int main(int argc, char** argv)
             continue;
 
         token0 = strtok(single_line, "\t");
-        token1 = token0 ? strtok(NULL, "\t") : NULL;
-        token2 = token1 ? strtok(NULL, "\t") : NULL;
+        token1 = token0 ? strtok(nullptr, "\t") : nullptr;
+        token2 = token1 ? strtok(nullptr, "\t") : nullptr;
 
-        if ((token0 == NULL) || (token1 == NULL) || (token2 == NULL)) {
+        if ((token0 == nullptr) || (token1 == nullptr) || (token2 == nullptr)) {
             fprintf(stderr, "Invalid file format");
             return -1;
         }
@@ -228,7 +225,7 @@ int main(int argc, char** argv)
         sprintf(file_name, "%s/Sheet_%02u.svg", out_dir, page_num);
         out_file = fopen(file_name, "w");
 
-        if (out_file == NULL) {
+        if (out_file == nullptr) {
             fprintf(stderr, "Could not open file fo writing: \"%s\"\n", file_name);
             return -1;
         }
@@ -245,7 +242,7 @@ int main(int argc, char** argv)
 
         form->setField(8, 0, tmp);
 
-        form->draw(out_file, page, page_num, flags);
+        form->draw(out_file, *page, page_num, flags);
 
         page->end(out_file);
 

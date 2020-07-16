@@ -1,12 +1,8 @@
-#include <fstream>
+#include <clocale>
+#include <cmath>
+#include <cstring>
 #include <getopt.h>
 #include <iostream>
-#include <locale.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wchar.h>
 
 #include <kxparsetablelib.h>
 #include <kxsvglib.h>
@@ -17,15 +13,15 @@ int parseArgs(int argc, char** argv, char** file_name, char** out_dir)
 {
     int c;
 
-    *file_name = NULL;
+    *file_name = nullptr;
 
     struct option long_options[] = {
-        { "input", required_argument, NULL, 0 },
-        { "dir", required_argument, NULL, 0 },
-        { 0, 0, 0, 0 },
+        { "input", required_argument, nullptr, 0 },
+        { "dir", required_argument, nullptr, 0 },
+        { nullptr, 0, nullptr, 0 },
     };
 
-    while (1) {
+    while (true) {
         int option_index = 0;
 
         c = getopt_long(argc, argv, "i:d:", long_options, &option_index);
@@ -56,23 +52,16 @@ int parseArgs(int argc, char** argv, char** file_name, char** out_dir)
             case '?':
                 fprintf(stderr, "Invalid short argument\n");
                 return -1;
-                break;
-
             default:
                 fprintf(stderr, "getopt_long returned unexpected code\n");
+                return -1;
         }
     }
 
-    if (*file_name == NULL)
+    if (*file_name == nullptr)
         return -1;
 
     return 0;
-}
-
-char* basename(char* path)
-{
-    char* base = strrchr(path, '/');
-    return base ? base + 1 : path;
 }
 
 void printUsage(char* app_name)
@@ -89,66 +78,70 @@ void printUsage(char* app_name)
 static const double font_size = 13.3231441;
 
 AbstractTable::AbstractTable(Page::PageSize page_size, bool landscape)
-    : out_dir(".")
-    , file_name(NULL)
-    , columns(MAX_COLUMNS_NUM, MAX_LINE_LEN)
-    , page(page_size, landscape)
-    , font_size(::font_size)
+    : m_out_dir(".")
+    , m_file_name(nullptr)
+    , m_columns(MAX_COLUMNS_NUM, MAX_LINE_LEN)
+    , m_page(page_size, landscape)
+    , m_font_size(::font_size)
 {
 }
 
 int AbstractTable::buildTable()
 {
-    KXSvg::drawRect(out_file, leftMargin(), topMargin(), payload_width, header_height + payload_height);
+    KXSvg::drawRect(m_out_file, leftMargin(), topMargin(), m_payload_width, m_header_height + m_payload_height);
 
-    double y1 = topMargin() + header_height;
+    double y1 = topMargin() + m_header_height;
 
-    for (int i = 0; i < lines_per_page; i++) {
-        KXSvg::drawLine(out_file, leftMargin(), y1, leftMargin() + payload_width, y1);
-        y1 += line_height;
+    for (unsigned int i = 0U; i < m_lines_per_page; i++) {
+        KXSvg::drawLine(m_out_file, leftMargin(), y1, leftMargin() + m_payload_width, y1);
+        y1 += m_line_height;
     }
 
-    int columns_num = columnsNum();
+    const unsigned int column_count = columnCount();
 
     double x = leftMargin();
-    y1 = topMargin() + header_height;
-    double y2 = topMargin() + header_height + payload_height;
+    y1 = topMargin() + m_header_height;
+    double y2 = topMargin() + m_header_height + m_payload_height;
 
-    for (int i = 0; i < columns_num - 1; i++) {
-        x += columnWidth(i);
-        KXSvg::drawLine(out_file, x, y1, x, y2);
+    for (unsigned int column = 0U; column < column_count - 1; ++column) {
+        x += columnWidth(column);
+        KXSvg::drawLine(m_out_file, x, y1, x, y2);
     }
 
-    int rows_num = headerRowsNum();
-    for (int i = 0; i < rows_num; i++)
-        buildTable(i);
+    const unsigned int row_count = headerRowCount();
+    for (unsigned int row = 0U; row < row_count; ++row)
+        buildTable(row);
 
     return 0;
 }
 
-int AbstractTable::buildTable(int row)
+int AbstractTable::buildTable(unsigned int row)
 {
     double x = leftMargin();
 
     double y = topMargin();
 
-    for (int i = 0; i < row; i++)
-        y += headerHeight(0, i);
+    for (unsigned int i = 0U; i < row; ++i)
+        y += headerHeight(0U, i);
 
-    int columns_num = columnsNum();
-    int rows_num = headerRowsNum();
+    const unsigned int column_count = columnCount();
+    const unsigned int row_count = headerRowCount();
 
-    for (int i = 0; i < columns_num; x += columnWidth(i), i++) {
-        if (columnName(i, row) == NULL)
+    for (unsigned int column = 0U; column < column_count; x += columnWidth(column), ++column) {
+        if (columnName(column, row) == nullptr)
             continue;
-        KXSvg::drawMultilineText(
-            out_file, x + headerCellWidth(i, row) / 2.0, y + headerCellHeight(i, row) / 2.0, font_size, columnName(i, row), KXSvg::Center, columnAngle(i));
+        KXSvg::drawMultilineText(m_out_file,
+                                 x + headerCellWidth(column, row) / 2.0,
+                                 y + headerCellHeight(column, row) / 2.0,
+                                 m_font_size,
+                                 columnName(column, row),
+                                 columnAngle(column, 0));
 
-        if (i > 0)
-            KXSvg::drawLine(out_file, x, y, x, y + headerCellHeight(i, row));
+        if (column > 0U)
+            KXSvg::drawLine(m_out_file, x, y, x, y + headerCellHeight(column, row));
 
-        if (row + headerVerticalSpan(i, row) - 1 < rows_num - 1)
-            KXSvg::drawLine(out_file, x, y + headerCellHeight(i, row), x + headerCellWidth(i, row), y + headerCellHeight(i, row));
+        if (row + headerVerticalSpan(column, row) - 1U < row_count - 1U)
+            KXSvg::drawLine(m_out_file, x, y + headerCellHeight(column, row), x + headerCellWidth(column, row), y + headerCellHeight(column, row));
     }
 
     return 0;
@@ -156,31 +149,29 @@ int AbstractTable::buildTable(int row)
 
 int AbstractTable::fillTable(double y)
 {
-    if (strcmp(columns[0], "H") == 0 && columns[1] && strlen(columns[1])) {
-        double len = _strlen(columns[1]); /* TODO */
-        len = len * 0.75;
+    if (strcmp(m_columns[0], "H") == 0 && m_columns[1] && strlen(m_columns[1])) {
+        const double len = 0.75 * AbstractTable::strlen(m_columns[1]); /* TODO */
 
-        KXSvg::drawText(out_file, header_x_skip, y, font_size, columns[1]);
-        KXSvg::drawLine(out_file, header_x_skip - len, y + line_height / 4, header_x_skip + len, y + line_height / 4, false);
+        KXSvg::drawText(m_out_file, m_header_x_skip, y, m_font_size, m_columns[1]);
+        KXSvg::drawLine(m_out_file, m_header_x_skip - len, y + m_line_height / 4, m_header_x_skip + len, y + m_line_height / 4, false);
     }
-    else if (strcmp(columns[0], "H2") == 0 && columns[1] && strlen(columns[1])) {
-        KXSvg::drawText(out_file, header_x_skip, y, font_size, columns[1]);
+    else if (strcmp(m_columns[0], "H2") == 0 && m_columns[1] && strlen(m_columns[1])) {
+        KXSvg::drawText(m_out_file, m_header_x_skip, y, m_font_size, m_columns[1]);
     }
-    else if (strcmp(columns[0], "L") == 0) {
-
+    else if (strcmp(m_columns[0], "L") == 0) {
         double x = leftMargin();
 
-        int columns_num = columnsNum();
+        const unsigned int column_count = columnCount();
 
-        for (int i = 0, j = 1; i < columns_num; x += columnWidth(i), i++, j++) {
-            if (columns[j] == NULL || columns[j][0] == '\0')
+        for (unsigned int i = 0; i < column_count; x += columnWidth(i), ++i) {
+            if (m_columns[i + 1] == nullptr || m_columns[i + 1][0] == '\0')
                 continue;
             double skip = 0.0;
             if (columnAlignment(i) == KXSvg::Left)
                 skip = 1.0;
             else if (columnAlignment(i) == KXSvg::Center)
                 skip = columnWidth(i) / 2.0;
-            KXSvg::drawText(out_file, x + skip, y, font_size, columns[j], columnAlignment(i));
+            KXSvg::drawText(m_out_file, x + skip, y, m_font_size, m_columns[i + 1], columnAlignment(i));
         }
     }
     else
@@ -194,45 +185,43 @@ int AbstractTable::generate(int argc, char** argv)
     setlocale(LC_ALL, "en_US.utf8");
 
     char* out_dir = (char*)".";
-    char* file_name = NULL;
+    char* file_name = nullptr;
 
     if (parseArgs(argc, argv, &file_name, &out_dir)) {
         printUsage(argv[0]);
         return -1;
     }
 
-    in_file.open(file_name, std::ios_base::in);
-    if (!in_file.is_open()) {
+    m_in_file.open(file_name, std::ios_base::in);
+    if (!m_in_file.is_open()) {
         fprintf(stderr, "Could not open file: \"%s\"\n", file_name);
         return -1;
     }
 
-    int page_num = 1;
+    unsigned int page_num = 1;
     double y = 0;
 
     char out_file_name[256];
 
-    int num;
-
     do {
-        if (out_file == NULL) {
+        if (m_out_file == nullptr) {
             sprintf(out_file_name, "%s/Sheet_%02u.svg", out_dir, page_num);
-            out_file.open(out_file_name);
+            m_out_file.open(out_file_name);
 
-            if (out_file == NULL) {
+            if (m_out_file == nullptr) {
                 fprintf(stderr, "Could not open file for writing: \"%s\"\n", out_file_name);
                 return -1;
             }
 
             reconfigureDimensions(page_num);
 
-            y = topMargin() + header_height + (line_height / 2.0L);
+            y = topMargin() + m_header_height + (m_line_height / 2.0);
 
-            page.begin(out_file);
+            m_page.begin(m_out_file);
 
-            if (page_num <= emptyPagesNum()) {
-                page.end(out_file);
-                out_file.close();
+            if (page_num <= emptyPageCount()) {
+                m_page.end(m_out_file);
+                m_out_file.close();
                 page_num++;
                 continue;
             }
@@ -240,32 +229,32 @@ int AbstractTable::generate(int argc, char** argv)
             buildTable();
         }
 
-        in_file.getline(single_line, MAX_LINE_LEN - 1);
+        m_in_file.getline(m_single_line, MAX_LINE_LEN - 1);
 
-        if (strlen(single_line) == 0) {
-            lines_per_page--;
+        if (strlen(m_single_line) == 0) {
+            m_lines_per_page--;
             continue;
         }
 
-        num = columns.parseLine(single_line, '\t');
+        m_columns.parseLine(m_single_line, '\t');
 
         if (fillTable(y))
             continue;
 
-        lines_per_page--;
-        y += line_height;
+        m_lines_per_page--;
+        y += m_line_height;
 
-        if ((lines_per_page == 0) || (in_file.eof())) {
+        if ((m_lines_per_page == 0U) || (m_in_file.eof())) {
             page_num++;
-            page.end(out_file);
-            out_file.close();
+            m_page.end(m_out_file);
+            m_out_file.close();
         }
 
-    } while (!in_file.eof());
+    } while (!m_in_file.eof());
 
-    if (!page.isEnded()) {
-        page.end(out_file);
-        out_file.close();
+    if (!m_page.isEnded()) {
+        m_page.end(m_out_file);
+        m_out_file.close();
     }
 
     return 0;
@@ -274,51 +263,48 @@ int AbstractTable::generate(int argc, char** argv)
 void AbstractTable::configureDimensions(Page::PageSize page_size, bool landscape)
 {
     Page dummy_page(page_size, landscape);
-    available_height = dummy_page.getHeight() - topMargin() - bottomMargin();
-    payload_width = dummy_page.getWidth() - leftMargin() - rightMargin();
+    m_available_height = dummy_page.getHeight() - topMargin() - bottomMargin();
+    m_payload_width = dummy_page.getWidth() - leftMargin() - rightMargin();
 
-    int num = headerColumnNum();
-    header_x_skip = leftMargin();
-    for (int i = 0; i < num; i++)
-        header_x_skip += columnWidth(i);
-    header_x_skip += columnWidth(num) / 2.0;
+    const unsigned int column_count = headerColumnCount();
+    m_header_x_skip = leftMargin();
+    for (unsigned int i = 0U; i < column_count; ++i)
+        m_header_x_skip += columnWidth(i);
+    m_header_x_skip += columnWidth(column_count) / 2.0;
 }
 
-void AbstractTable::reconfigureDimensions(int page_num)
+void AbstractTable::reconfigureDimensions(unsigned int page_num)
 {
-    int rows_num = headerRowsNum();
-    header_height = 0.0;
-    for (int i = 0; i < rows_num; i++)
-        header_height += headerHeight(page_num, i);
-    payload_height = available_height - header_height - footerHeight(page_num);
-    lines_per_page = ceil(payload_height / min_line_height);
-    line_height = payload_height / (double)lines_per_page;
+    const unsigned int row_count = headerRowCount();
+    m_header_height = 0.0;
+    for (unsigned int i = 0; i < row_count; i++)
+        m_header_height += headerHeight(page_num, i);
+    m_payload_height = m_available_height - m_header_height - footerHeight(page_num);
+    m_lines_per_page = static_cast<unsigned int>(ceil(m_payload_height / m_min_line_height));
+    m_line_height = m_payload_height / m_lines_per_page;
 }
 
-double AbstractTable::headerCellWidth(int column, int row) const
+double AbstractTable::headerCellWidth(unsigned int column, unsigned int row) const
 {
     double width = 0.0;
-    int span = headerHorizontalSpan(column, row);
-    for (int i = 0; i < span; i++)
+    const unsigned int span = headerHorizontalSpan(column, row);
+    for (unsigned int i = 0U; i < span; ++i)
         width += columnWidth(column + i);
     return width;
 }
 
-double AbstractTable::headerCellHeight(int column, int row) const
+double AbstractTable::headerCellHeight(unsigned int column, unsigned int row) const
 {
     double height = 0.0;
-    int span = headerVerticalSpan(column, row);
-    for (int i = 0; i < span; i++)
-        height += headerHeight(0, row + i);
+    const unsigned int span = headerVerticalSpan(column, row);
+    for (unsigned int i = 0U; i < span; ++i)
+        height += headerHeight(0U, row + i);
     return height;
 }
 
-double AbstractTable::footerHeight(int page_num) const
+double AbstractTable::footerHeight(unsigned int page_num) const
 {
-    if (page_num == 1)
-        return 40.0L;
-    else
-        return 15.0L;
+    return page_num == 1U ? 40.0: 15.0;
 }
 
 double AbstractTable::leftMargin() const
@@ -341,37 +327,34 @@ double AbstractTable::bottomMargin() const
     return 5.0;
 }
 
-int AbstractTable::columnAngle(int num, int row) const
+int AbstractTable::columnAngle(unsigned int num, unsigned int row) const
 {
     return 0;
 }
 
-int AbstractTable::headerRowsNum() const
+unsigned int AbstractTable::headerRowCount() const
 {
-    return 1;
+    return 1U;
 }
 
-int AbstractTable::headerHorizontalSpan(int column, int row) const
+unsigned int AbstractTable::headerHorizontalSpan(unsigned int column, unsigned int row) const
 {
-    return 1;
+    return 1U;
 }
 
-int AbstractTable::headerVerticalSpan(int column, int row) const
+unsigned int AbstractTable::headerVerticalSpan(unsigned int column, unsigned int row) const
 {
-    return 1;
+    return 1U;
 }
 
-int AbstractTable::emptyPagesNum() const
+unsigned int AbstractTable::emptyPageCount() const
 {
-    return 0;
+    return 0U;
 }
 
-size_t AbstractTable::_strlen(const char* string)
+size_t AbstractTable::strlen(const char* string)
 {
-    mbstate_t mbs;
-    memset(&mbs, 0, sizeof(mbs)); /* MUST BE!!! */
-
-    size_t len = mbsrtowcs(NULL, &string, 0, &mbs);
-
+    mbstate_t mbs{};
+    size_t len = mbsrtowcs(nullptr, &string, 0, &mbs);
     return len > 50 ? 50 : len;
 }

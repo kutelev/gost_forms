@@ -6,18 +6,17 @@
 
 class TextLine {
 public:
-    TextLine(int max_columns_num, int max_column_len);
+    TextLine(unsigned int max_column_count, unsigned int max_column_len);
     ~TextLine();
 
-    int parseLine(const char* line, char delimiter);
-    int columnsNum() { return columns_num; }
-    const char* operator[](int num) const { return columns_data[num]; }
+    unsigned int parseLine(const char* line, char delimiter);
+    const char* operator[](unsigned int num) const { return m_columns_data[num]; }
 
 protected:
-    int max_columns_num;
-    int max_column_len;
-    int columns_num;
-    char** columns_data;
+    unsigned int m_max_columns_num;
+    unsigned int m_max_column_len;
+    unsigned int m_columns_num;
+    char** m_columns_data;
 };
 
 #endif
