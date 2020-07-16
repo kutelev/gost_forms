@@ -13,7 +13,9 @@ VERBOSE = @
 SILENT  = -s
 SUPPRESS_OUTPUT = 1>/dev/null 2>&1
 
-INKSCAPE      = inkscape
+# dbus-run-session is required due to the following issue:
+# https://gitlab.com/inkscape/inkscape/-/issues/294
+INKSCAPE      = dbus-run-session inkscape
 PDFTK         = pdftk
 XETEX         = xelatex
 BIBTEX        = bibtex

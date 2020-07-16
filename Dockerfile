@@ -1,7 +1,12 @@
-FROM ubuntu:14.04
-LABEL maintainer "Alexander Kutelev <alexander@kutelev.ru>"
+FROM ubuntu:20.04
+LABEL maintainer="Alexander Kutelev <alexander@kutelev.ru>"
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y upgrade; \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections; \
+    apt-get install -y tzdata; \
+    echo "Asia/Tomsk" > /etc/timezone; \
+    ln -fs /usr/share/zoneinfo/Asia/Tomsk /etc/localtime; \
+    dpkg-reconfigure -f noninteractive tzdata; \
     apt-get install -y \
         cmake \
         g++ \
@@ -11,6 +16,7 @@ RUN apt-get update && apt-get -y upgrade; \
         make \
         msttcorefonts \
         pdftk \
+        rename \
         texlive-fonts-recommended \
         texlive-lang-cyrillic \
         texlive-latex-extra \

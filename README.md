@@ -4,18 +4,22 @@
 
 Для того чтобы собрать все документы необходима ОС Linux (ранее проверялось только на дистрибутивах Debian и Ubuntu) со следующими установленными пакетами:
 * g++
+* cmake
 * make
 * inkscape
 * pdftk
 * xelatex
 
-Полный набор необходимых пакетов (справедливо для Ubuntu 14.04):
+Полный набор необходимых пакетов (справедливо для Ubuntu 20.04):
+* cmake
 * g++
+* git
 * inkscape
 * locales
 * make
 * msttcorefonts
 * pdftk
+* rename
 * texlive-fonts-recommended
 * texlive-lang-cyrillic
 * texlive-latex-extra
