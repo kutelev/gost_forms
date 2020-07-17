@@ -1,2 +1,3 @@
 * text=auto
 *.kxg text eol=lf
+build.py eol=lf

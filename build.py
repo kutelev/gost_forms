@@ -1,3 +1,5 @@
+#!/usr/bin/python3 -B
+
 from argparse import ArgumentParser
 from os import makedirs, listdir
 from os.path import dirname, abspath, realpath, join as path_join, exists, isdir
