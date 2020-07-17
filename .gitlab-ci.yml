@@ -17,7 +17,12 @@ prepare:image:
   tags:
     - docker
     - linux
-  when: manual
+  rules:
+    - changes:
+        - Dockerfile
+      when: always
+    - when: manual
+      allow_failure: true
 
 build:documents:
   stage: build
