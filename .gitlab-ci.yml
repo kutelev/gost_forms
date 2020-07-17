@@ -27,7 +27,7 @@ build:documents:
     - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=1 -G "Unix Makefiles"
     - cmake --build . --config Release
     # Build documents.
-    - ls -1 | egrep "^.{4}\.[0-9]{6}\.[0-9]{3}\ \([А-Яа-я ]+\)$" | xargs -n1 -I{} bash -c "cd \"{}\"; make"
+    - python3 build.py
     - find ./ -type f -printf "%P\n" | egrep "[А-Я]{4}\.[0-9]{6}\.[0-9]{3}\ ([0-9А-Я]+\ )?\([А-Яа-я ]+\)\.pdf" > .gitignore
     - git add .gitignore
     - git clean -f -d -q
