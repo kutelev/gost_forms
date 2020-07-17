@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from os import walk, stat, makedirs, listdir
+from os import stat, makedirs, listdir
 from os.path import dirname, abspath, realpath, join as path_join, exists, basename
 from subprocess import check_call
-from typing import List, Tuple
+from typing import List
 from shutil import rmtree, copyfile
 from multiprocessing.pool import ThreadPool
 
@@ -15,7 +15,7 @@ class DocumentBuilderException(Exception):
     pass
 
 
-class DocumentBuilder(ABC):
+class DocumentBuilder:
     script_path = dirname(abspath(realpath(__file__)))
 
     def __init__(self, root: str, project: str, document: str):
@@ -25,14 +25,35 @@ class DocumentBuilder(ABC):
         self.document_path = path_join(self.document_dir, document) + '.pdf'
         self.sheet_count = 0
 
+    def _prerequisites(self) -> List[str]:
+        return []
+
+    def is_document_up_to_date(self) -> bool:
+        if not exists(self.document_path):
+            return False
+        target_mtime = stat(self.document_path).st_mtime_ns
+        return all(stat(dependency).st_mtime_ns < target_mtime for dependency in self._prerequisites())
+
+    @abstractmethod
+    def build(self) -> None:
+        pass
+
+    @staticmethod
+    def _tool_path(tool_name: str) -> str:
+        return path_join(TableBuilder.script_path, 'tools', 'apps', tool_name, tool_name)
+
     def _tmp_data_dir(self) -> str:
-        return abspath(path_join(self.document_dir, 'tmp_data'))
+        return abspath(path_join(self.document_dir, 'data'))
 
     def _tmp_form_dir(self) -> str:
-        return abspath(path_join(self.document_dir, 'tmp_form'))
+        return abspath(path_join(self.document_dir, 'form'))
 
     def _tmp_overlay_dir(self) -> str:
-        return abspath(path_join(self.document_dir, 'tmp_overlay'))
+        return abspath(path_join(self.document_dir, 'overlay'))
+
+
+class TableBuilder(DocumentBuilder):
+    script_path = dirname(abspath(realpath(__file__)))
 
     def build(self) -> None:
         if self.is_document_up_to_date():
@@ -59,8 +80,11 @@ class DocumentBuilder(ABC):
         self._combine_sheets()
 
     @abstractmethod
-    def _build_data_sheets(self) -> None:
+    def _tool_name(self) -> str:
         pass
+
+    def _build_data_sheets(self) -> None:
+        check_call([self._tool_path(self._tool_name()), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
 
     def _prerequisites(self) -> List[str]:
         prerequisites = [path_join(self.document_dir, file_name) for file_name in ('data.kxg', 'form.kxg')]
@@ -69,20 +93,10 @@ class DocumentBuilder(ABC):
                 raise DocumentBuilderException(f'File "{basename(file_path)}" is missing')
         return prerequisites
 
-    def is_document_up_to_date(self) -> bool:
-        if not exists(self.document_path):
-            return False
-        target_mtime = stat(self.document_path).st_mtime_ns
-        return all(stat(dependency).st_mtime_ns < target_mtime for dependency in self._prerequisites())
-
-    @staticmethod
-    def _tool_path(tool_name: str) -> str:
-        return path_join(DocumentBuilder.script_path, 'tools', 'apps', tool_name, tool_name)
-
     def _generate_list_of_changes(self) -> None:
         # TODO: Make possible generation of documents without this sheet.
         self._calculate_sheet_count()
-        copyfile(path_join(DocumentBuilder.script_path, 'tools', 'common', 'list_of_changes.svg'),
+        copyfile(path_join(TableBuilder.script_path, 'tools', 'common', 'list_of_changes.svg'),
                  path_join(self._tmp_data_dir(), f'Sheet_{self.sheet_count + 1:02}.svg'))
 
     def _calculate_sheet_count(self) -> None:
@@ -94,6 +108,8 @@ class DocumentBuilder(ABC):
     def _convert_svg_to_pdf(self) -> None:
         def convert(svg_file_path) -> None:
             pdf_file_path = svg_file_path[:-4] + '.pdf'
+            # dbus-run-session is required due to the following issue:
+            # https://gitlab.com/inkscape/inkscape/-/issues/294
             check_call(['dbus-run-session', 'inkscape', '--export-pdf', pdf_file_path, svg_file_path], cwd=self.document_dir)
 
         svg_files = []
@@ -115,16 +131,16 @@ class DocumentBuilder(ABC):
         check_call(['pdftk'] + sheets + ['cat', 'output', basename(self.document_path)], cwd=self.document_dir)
 
 
-class SpecificationBuilder(DocumentBuilder):
-    def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('2.106-form1'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
+class SpecificationBuilder(TableBuilder):
+    def _tool_name(self) -> str:
+        return '2.106-form1'
 
 
-class RegisterBuilder(DocumentBuilder):
-    def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('2.106-form5'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
+class RegisterBuilder(TableBuilder):
+    def _tool_name(self) -> str:
+        return '2.106-form5'
 
 
-class ListOfElementsBuilder(DocumentBuilder):
-    def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('listofelgen'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
+class ListOfElementsBuilder(TableBuilder):
+    def _tool_name(self) -> str:
+        return 'listofelgen'
