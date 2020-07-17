@@ -62,37 +62,22 @@ class DocumentBuilder(ABC):
     def _build_data_sheets(self) -> None:
         pass
 
-    def default_prerequisites(self) -> List[str]:
-        prerequisites = []
-        for root, _, files in walk(self.document_dir):
-            prerequisites.extend([abspath(path_join(root, file_name)) for file_name in files if file_name.endswith('.kxg')])
+    def _prerequisites(self) -> List[str]:
+        prerequisites = [path_join(self.document_dir, file_name) for file_name in ('data.kxg', 'form.kxg')]
+        for file_path in prerequisites:
+            if not exists(file_path):
+                raise DocumentBuilderException(f'File "{basename(file_path)}" is missing')
         return prerequisites
-
-    # noinspection PyMethodMayBeStatic
-    def specific_prerequisites(self) -> List[str]:
-        return []
-
-    def prerequisites(self) -> List[str]:
-        return self.default_prerequisites() + self.specific_prerequisites()
 
     def is_document_up_to_date(self) -> bool:
         if not exists(self.document_path):
             return False
         target_mtime = stat(self.document_path).st_mtime_ns
-        return all(stat(dependency).st_mtime_ns < target_mtime for dependency in self.prerequisites())
+        return all(stat(dependency).st_mtime_ns < target_mtime for dependency in self._prerequisites())
 
     @staticmethod
     def _tool_path(tool_name: str) -> str:
         return path_join(DocumentBuilder.script_path, 'tools', 'apps', tool_name, tool_name)
-
-    def _default_data(self) -> Tuple[str, str]:
-        """
-        :return: Tuple containing two paths: data file (*.kxg), form fill data (form.kxg)
-        """
-        data = sorted(self.default_prerequisites(), key=lambda x: basename(x) == 'form.kxg')
-        if len(data) != 2 or basename(data[1]) != 'form.kxg':
-            raise DocumentBuilderException('Invalid input data')
-        return data[0], data[1]
 
     def _generate_list_of_changes(self) -> None:
         # TODO: Make possible generation of documents without this sheet.
@@ -104,7 +89,7 @@ class DocumentBuilder(ABC):
         self.sheet_count = len([file_name for file_name in listdir(self._tmp_data_dir()) if file_name.endswith('.svg')])
 
     def _build_form(self) -> None:
-        check_call([self._tool_path('formgen'), '-i', self._default_data()[1], '-p', str(self.sheet_count)], cwd=self._tmp_form_dir())
+        check_call([self._tool_path('formgen'), '-i', path_join('..', 'form.kxg'), '-p', str(self.sheet_count)], cwd=self._tmp_form_dir())
 
     def _convert_svg_to_pdf(self) -> None:
         def convert(svg_file_path) -> None:
@@ -113,33 +98,33 @@ class DocumentBuilder(ABC):
 
         svg_files = []
         for tmp_dir in (self._tmp_data_dir(), self._tmp_form_dir()):
-            svg_files.extend([path_join(tmp_dir, f'Sheet_{sheet_num:02}.svg') for sheet_num in range(1, self.sheet_count + 1)])
+            svg_files.extend([path_join(basename(tmp_dir), f'Sheet_{sheet_num:02}.svg') for sheet_num in range(1, self.sheet_count + 1)])
         pool.map(convert, svg_files, 1)
 
     def _overlay_form(self) -> None:
         def overlay(sheet_num: int) -> None:
-            data_page_path = path_join(self._tmp_data_dir(), f'Sheet_{sheet_num:02}.pdf')
-            form_page_path = path_join(self._tmp_form_dir(), f'Sheet_{sheet_num:02}.pdf')
-            overlay_page_path = path_join(self._tmp_overlay_dir(), f'Sheet_{sheet_num:02}.pdf')
+            data_page_path = path_join(basename(self._tmp_data_dir()), f'Sheet_{sheet_num:02}.pdf')
+            form_page_path = path_join(basename(self._tmp_form_dir()), f'Sheet_{sheet_num:02}.pdf')
+            overlay_page_path = path_join(basename(self._tmp_overlay_dir()), f'Sheet_{sheet_num:02}.pdf')
             check_call(['pdftk', form_page_path, 'stamp', data_page_path, 'output', overlay_page_path], cwd=self.document_dir)
 
         pool.map(overlay, range(1, self.sheet_count + 1), 1)
 
     def _combine_sheets(self) -> None:
-        sheets = [path_join(self._tmp_overlay_dir(), f'Sheet_{sheet_num:02}.pdf') for sheet_num in range(1, self.sheet_count + 1)]
-        check_call(['pdftk'] + sheets + ['cat', 'output', self.document_path], cwd=self.document_dir)
+        sheets = [path_join(basename(self._tmp_overlay_dir()), f'Sheet_{sheet_num:02}.pdf') for sheet_num in range(1, self.sheet_count + 1)]
+        check_call(['pdftk'] + sheets + ['cat', 'output', basename(self.document_path)], cwd=self.document_dir)
 
 
 class SpecificationBuilder(DocumentBuilder):
     def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('2.106-form1'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
+        check_call([self._tool_path('2.106-form1'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
 
 
 class RegisterBuilder(DocumentBuilder):
     def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('2.106-form5'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
+        check_call([self._tool_path('2.106-form5'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
 
 
 class ListOfElementsBuilder(DocumentBuilder):
     def _build_data_sheets(self) -> None:
-        check_call([self._tool_path('listofelgen'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
+        check_call([self._tool_path('listofelgen'), '-i', path_join('..', 'data.kxg')], cwd=self._tmp_data_dir())
