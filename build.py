@@ -10,7 +10,7 @@ from typing import List
 from re import compile
 from builtins import print as original_print
 
-from document_builder import SpecificationBuilder, DocumentBuilderException
+from document_builder import SpecificationBuilder, RegisterBuilder, DocumentBuilderException
 
 project_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} \(.*\)$')
 document_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} ((ВП|ПЭ3|РЭ) )?\(.*\)$')
@@ -83,10 +83,9 @@ class Builder:
             print(f'Building document "{document}" for project "{project}" ...')
             document_type = document_pattern.match(document).group(2)
             if document_type is None:  # Спецификация
-                builder = SpecificationBuilder(project, document)
-                builder.build()
+                SpecificationBuilder(project, document).build()
             elif document_type == 'ВП':  # Ведомость покупных изделий
-                check_call(['make'], cwd=path_join(self.root, project, document))
+                RegisterBuilder(project, document).build()
             elif document_type == 'ПЭ3':  # Перечень элементов
                 check_call(['make'], cwd=path_join(self.root, project, document))
             elif document_type == 'РЭ':  # Руководство по эксплуатации

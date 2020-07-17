@@ -5,7 +5,7 @@ from os.path import dirname, abspath, realpath, join as path_join, exists, basen
 from subprocess import check_call
 from sys import stderr
 from typing import List, Tuple
-from shutil import rmtree
+from shutil import rmtree, copyfile
 from multiprocessing.pool import ThreadPool
 
 pool = ThreadPool()
@@ -23,12 +23,11 @@ class DocumentBuilderException(Exception):
 class DocumentBuilder(ABC):
     script_path = dirname(abspath(realpath(__file__)))
 
-    def __init__(self, project: str, document: str, with_list_of_changes: bool = False):
+    def __init__(self, project: str, document: str):
         self.project = project
         self.document = document
         self.document_dir = path_join(project, document)
         self.document_path = path_join(self.document_dir, document) + '.pdf'
-        self.with_list_of_changes = with_list_of_changes
         self.sheet_count = 0
 
     def _tmp_data_dir(self) -> str:
@@ -101,9 +100,10 @@ class DocumentBuilder(ABC):
         return data[0], data[1]
 
     def _generate_list_of_changes(self) -> None:
-        if not self.with_list_of_changes:
-            return
-        # TODO: Implement this.
+        # TODO: Make possible generation of documents without this sheet.
+        self._calculate_sheet_count()
+        copyfile(path_join(DocumentBuilder.script_path, 'tools', 'common', 'list_of_changes.svg'),
+                 path_join(self._tmp_data_dir(), f'Sheet_{self.sheet_count + 1:02}.svg'))
 
     def _calculate_sheet_count(self) -> None:
         self.sheet_count = len([file_name for file_name in listdir(self._tmp_data_dir()) if file_name.endswith('.svg')])
@@ -141,3 +141,11 @@ class SpecificationBuilder(DocumentBuilder):
 
     def _build_data_sheets(self) -> None:
         check_call([self._tool_path('2.106-form1'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
+
+
+class RegisterBuilder(DocumentBuilder):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    def _build_data_sheets(self) -> None:
+        check_call([self._tool_path('2.106-form5'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
