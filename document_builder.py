@@ -138,3 +138,8 @@ class SpecificationBuilder(DocumentBuilder):
 class RegisterBuilder(DocumentBuilder):
     def _build_data_sheets(self) -> None:
         check_call([self._tool_path('2.106-form5'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
+
+
+class ListOfElementsBuilder(DocumentBuilder):
+    def _build_data_sheets(self) -> None:
+        check_call([self._tool_path('listofelgen'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
