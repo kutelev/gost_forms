@@ -1,24 +1,18 @@
 from argparse import ArgumentParser
 from os import makedirs, listdir
-from sys import stderr
 from os.path import dirname, abspath, realpath, join as path_join, exists, isdir
 from platform import system
 from shutil import rmtree
-from subprocess import check_call, CalledProcessError
+from subprocess import CalledProcessError
 from sys import exit
 from typing import List
 from re import compile
-from builtins import print as original_print
 
 from document_builder import SpecificationBuilder, RegisterBuilder, DocumentBuilderException
+from common import print, check_call
 
 project_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} \(.*\)$')
 document_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} ((ВП|ПЭ3|РЭ) )?\(.*\)$')
-
-
-# noinspection PyShadowingBuiltins
-def print(*args) -> None:
-    original_print(*args, file=stderr, flush=True)
 
 
 def check_prerequisites():
@@ -83,9 +77,9 @@ class Builder:
             print(f'Building document "{document}" for project "{project}" ...')
             document_type = document_pattern.match(document).group(2)
             if document_type is None:  # Спецификация
-                SpecificationBuilder(project, document).build()
+                SpecificationBuilder(self.root, project, document).build()
             elif document_type == 'ВП':  # Ведомость покупных изделий
-                RegisterBuilder(project, document).build()
+                RegisterBuilder(self.root, project, document).build()
             elif document_type == 'ПЭ3':  # Перечень элементов
                 check_call(['make'], cwd=path_join(self.root, project, document))
             elif document_type == 'РЭ':  # Руководство по эксплуатации

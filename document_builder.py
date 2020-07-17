@@ -1,19 +1,14 @@
 from abc import ABC, abstractmethod
-from builtins import print as original_print
 from os import walk, stat, makedirs, listdir
 from os.path import dirname, abspath, realpath, join as path_join, exists, basename
 from subprocess import check_call
-from sys import stderr
 from typing import List, Tuple
 from shutil import rmtree, copyfile
 from multiprocessing.pool import ThreadPool
 
+from common import print, check_call
+
 pool = ThreadPool()
-
-
-# noinspection PyShadowingBuiltins
-def print(*args) -> None:
-    original_print(*args, file=stderr, flush=True)
 
 
 class DocumentBuilderException(Exception):
@@ -23,21 +18,21 @@ class DocumentBuilderException(Exception):
 class DocumentBuilder(ABC):
     script_path = dirname(abspath(realpath(__file__)))
 
-    def __init__(self, project: str, document: str):
+    def __init__(self, root: str, project: str, document: str):
         self.project = project
         self.document = document
-        self.document_dir = path_join(project, document)
+        self.document_dir = path_join(root, project, document)
         self.document_path = path_join(self.document_dir, document) + '.pdf'
         self.sheet_count = 0
 
     def _tmp_data_dir(self) -> str:
-        return path_join(self.document_dir, 'tmp_data')
+        return abspath(path_join(self.document_dir, 'tmp_data'))
 
     def _tmp_form_dir(self) -> str:
-        return path_join(self.document_dir, 'tmp_form')
+        return abspath(path_join(self.document_dir, 'tmp_form'))
 
     def _tmp_overlay_dir(self) -> str:
-        return path_join(self.document_dir, 'tmp_overlay')
+        return abspath(path_join(self.document_dir, 'tmp_overlay'))
 
     def build(self) -> None:
         if self.is_document_up_to_date():
@@ -114,7 +109,7 @@ class DocumentBuilder(ABC):
     def _convert_svg_to_pdf(self) -> None:
         def convert(svg_file_path) -> None:
             pdf_file_path = svg_file_path[:-4] + '.pdf'
-            check_call(['dbus-run-session', 'inkscape', '--export-pdf', pdf_file_path, svg_file_path])
+            check_call(['dbus-run-session', 'inkscape', '--export-pdf', pdf_file_path, svg_file_path], cwd=self.document_dir)
 
         svg_files = []
         for tmp_dir in (self._tmp_data_dir(), self._tmp_form_dir()):
@@ -126,26 +121,20 @@ class DocumentBuilder(ABC):
             data_page_path = path_join(self._tmp_data_dir(), f'Sheet_{sheet_num:02}.pdf')
             form_page_path = path_join(self._tmp_form_dir(), f'Sheet_{sheet_num:02}.pdf')
             overlay_page_path = path_join(self._tmp_overlay_dir(), f'Sheet_{sheet_num:02}.pdf')
-            check_call(['pdftk', form_page_path, 'stamp', data_page_path, 'output', overlay_page_path])
+            check_call(['pdftk', form_page_path, 'stamp', data_page_path, 'output', overlay_page_path], cwd=self.document_dir)
 
         pool.map(overlay, range(1, self.sheet_count + 1), 1)
 
     def _combine_sheets(self) -> None:
         sheets = [path_join(self._tmp_overlay_dir(), f'Sheet_{sheet_num:02}.pdf') for sheet_num in range(1, self.sheet_count + 1)]
-        check_call(['pdftk'] + sheets + ['cat', 'output', self.document_path])
+        check_call(['pdftk'] + sheets + ['cat', 'output', self.document_path], cwd=self.document_dir)
 
 
 class SpecificationBuilder(DocumentBuilder):
-    def __init__(self, *args):
-        super().__init__(*args)
-
     def _build_data_sheets(self) -> None:
         check_call([self._tool_path('2.106-form1'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
 
 
 class RegisterBuilder(DocumentBuilder):
-    def __init__(self, *args):
-        super().__init__(*args)
-
     def _build_data_sheets(self) -> None:
         check_call([self._tool_path('2.106-form5'), '-i', self._default_data()[0]], cwd=self._tmp_data_dir())
