@@ -5,8 +5,8 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    version="1.0"
-   width="744.09448"
-   height="1052.3622"
+   width="210mm"
+   height="297mm"
    id="svg2">
   <defs
      id="defs4">
@@ -36,6 +36,8 @@
     </marker>
   </defs>
   <g
+     style="stroke-width:0.937287"
+     transform="matrix(1.066955,0,0,1.0668627,-0.02043165,-0.0034497)"
      id="layer1">
     <path
        d="m 70.866143,17.716513 0,963.779527 655.511807,0 0,-963.779527 -655.511807,0 z"
