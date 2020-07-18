@@ -10,7 +10,7 @@ from sys import exit
 from typing import List
 from re import compile
 
-from document_builder import SpecificationBuilder, RegisterBuilder, ListOfElementsBuilder, DocumentBuilderException
+from document_builder import SpecificationBuilder, RegisterBuilder, ListOfElementsBuilder, TextDocumentBuilder, DocumentBuilderException
 from common import print, check_call
 
 project_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} \(.*\)$')
@@ -85,7 +85,7 @@ class Builder:
             elif document_type == 'ПЭ3':  # Перечень элементов
                 ListOfElementsBuilder(self.root, project, document).build()
             elif document_type == 'РЭ':  # Руководство по эксплуатации
-                check_call(['make'], cwd=path_join(self.root, project, document))
+                TextDocumentBuilder(self.root, project, document).build()
             else:
                 assert False, f'Unknown document type: {document_type}'
             print(f'Document "{document}" of project "{project}" has been successfully built.')
@@ -96,10 +96,10 @@ class Builder:
 
 
 def main() -> None:
-    script_path = dirname(abspath(realpath(__file__)))
+    script_dir = dirname(abspath(realpath(__file__)))
 
     arg_parser = ArgumentParser(description='Documentation builder')
-    arg_parser.add_argument('--root', type=str, default=script_path, help='A path to search for projects at')
+    arg_parser.add_argument('--root', type=str, default=script_dir, help='A path to search for projects at')
     arg_parser.add_argument('--clean', action='store_true', default=False, help='Clean working copy (git clean -ffdxq)')
     arg_parser.add_argument('--force_tools_rebuild', action='store_true', default=False, help='Forcibly rebuild generating tools')
     args = arg_parser.parse_args()
@@ -107,7 +107,7 @@ def main() -> None:
     check_prerequisites()
 
     builder = Builder(args.root)
-    builder.build_tools(script_path, args.force_tools_rebuild)
+    builder.build_tools(script_dir, args.force_tools_rebuild)
 
     for project in builder.enumerate_projects():
         if args.clean:
@@ -119,6 +119,9 @@ def main() -> None:
 if __name__ == '__main__':
     try:
         main()
-    except (CalledProcessError, DocumentBuilderException) as e:
+    except (FileNotFoundError, CalledProcessError, DocumentBuilderException) as e:
         print(f'Something went wrong: {str(e)}')
+        exit(1)
+    except Exception as e:
+        print(f'Critical error: {str(e)}')
         exit(1)

@@ -13,7 +13,6 @@ RUN apt-get update && apt-get -y upgrade; \
         git \
         inkscape \
         locales \
-        make \
         msttcorefonts \
         pdftk \
         rename \
