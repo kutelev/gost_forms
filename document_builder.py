@@ -5,8 +5,7 @@ from typing import List, Tuple
 from shutil import rmtree, copyfile
 from multiprocessing.pool import ThreadPool
 from hashlib import md5
-import cairosvg
-import os
+from cairosvg import svg2pdf
 
 from common import print, check_call
 
@@ -85,7 +84,7 @@ class DocumentBuilder(ABC):
                 if source_mtime < target_mtime:
                     print(f'File "{pdf_file_path}" is up to date.')
                     return           
-            cairosvg.svg2pdf(url= path_join(self.document_dir , svg_file_path), write_to=path_join(self.document_dir , pdf_file_path) )
+            svg2pdf(url= path_join(self.document_dir , svg_file_path), write_to=path_join(self.document_dir , pdf_file_path) )
 
         print('Converting SVG files to corresponding PDF ones ...')
         svg_files = []
