@@ -9,12 +9,13 @@ RUN apt-get update && apt-get -y upgrade; \
     dpkg-reconfigure -f noninteractive tzdata; \
     apt-get install -y \
         cmake \
+        fontconfig \
         g++ \
         git \
-        inkscape \
         locales \
         msttcorefonts \
         pdftk \
+        python3-cairosvg \
         rename \
         texlive-fonts-recommended \
         texlive-lang-cyrillic \
