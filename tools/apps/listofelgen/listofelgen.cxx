@@ -212,14 +212,32 @@ int main(int argc, char** argv)
         lines_per_page--;
         y += line_height;
 
+		fprintf(stderr, " Page %d line %d  in eof %d out file %d\n", page_num, lines_per_page, in_file.eof(),  out_file);
+		
         if ((lines_per_page == 0) || (in_file.eof())) {
             page_num++;
             page.end(out_file);
             fclose(out_file);
             out_file = nullptr;
-        }
+            fprintf(stderr, " Page %d done  \n", page_num - 1);
+        }    
+       
 
     } while (!in_file.eof());
+    
+    
+    if (out_file != nullptr){
+		
+		page.end(out_file);
+        fclose(out_file);
+        out_file = nullptr;
+        fprintf(stderr, __FILE__":%d Page %d done  \n", __LINE__,  page_num - 1);
+		
+	}
+    
+    
+    fprintf(stderr, "Ex Page %d line %d  in eof %d out file %d\n", page_num, lines_per_page, in_file.eof(),  out_file);
+    
 
     return 0;
 }

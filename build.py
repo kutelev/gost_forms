@@ -13,8 +13,8 @@ from re import compile
 from document_builder import SpecificationBuilder, RegisterBuilder, ListOfElementsBuilder, TextDocumentBuilder, DocumentBuilderException
 from common import print, check_call
 
-project_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} \(.*\)$')
-document_pattern = compile(r'^[А-Я]{4}\.\d{6}\.\d{3} ((ВП|ПЭ3|РЭ) )?\(.*\)$')
+project_pattern = compile(r'^[А-Я]{4}[-.]{1}\d{2,}\.\d{3,}[0-9.]{0,} \(.*\)$')
+document_pattern = compile(r'^[А-Я]{4}[-.]{1}\d{2,}\.\d{3,}[0-9.]{0,} ((ВП|ПЭ3|РЭ) )?\(.*\)$')
 
 
 def check_prerequisites():
