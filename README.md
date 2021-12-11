@@ -27,8 +27,8 @@
 
 Также необходимо наличие некоторых шрифтов, сами шрифты имеются в данном репозитории. Для того чтобы они стали доступны обычно достаточно просто поместить их в директорию ~/.fonts.
 
-В данном репозитории находится образец Dockerfile'а: https://gitlab.com/kutelev/gost_forms/raw/master/Dockerfile
+В данном репозитории находится образец Dockerfile'а: https://gitlab.com/kutelev/gost_forms/-/raw/master/Dockerfile
 
 Готовый к использованию образ может быть получен следующим образом: docker pull registry.gitlab.com/kutelev/gost_forms:master
 
-Примеры собранных документов доступны по ссылке: https://gitlab.com/kutelev/gost_forms/builds/artifacts/master/browse?job=build:documents
+Примеры собранных документов доступны по ссылке: https://gitlab.com/kutelev/gost_forms/-/jobs/artifacts/master/browse?job=build:documents
